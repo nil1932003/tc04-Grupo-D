@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mb-5" >
+            <div class="col-md-4">
+                <h2 class="text-center">Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">E-mail:</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Senha:</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary ">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+
+         // Objeto para armazenar informações do usuário logado
+         let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const usuarios = {
+                admin: { senha: "adm123", email: "adm@teste.com", tipo: "adm" },
+                cliente: { senha: "user123", email: "user@teste.com", tipo: "user" }
+            };
+
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const email = document.getElementById('email').value;
+                const senha = document.getElementById('password').value;
+
+                // Verifica se as credenciais correspondem a um usuário válido
+                if (usuarios.admin.email === email && usuarios.admin.senha === senha) {
+                    currentUser = usuarios.admin.tipo;
+                    window.location.href = 'reservaAdm.html';
+                } else if (usuarios.cliente.email === email && usuarios.cliente.senha === senha) {
+                    currentUser = usuarios.cliente.tipo;
+                    window.location.href = 'reservaCliente.html';
+                    
+                } else {
+                    alert('Credenciais inválidas. Por favor, tente novamente.');
+                }
+            });
+        });
+        console.log(currentUser)
+   </script>
+</body>
+</html>

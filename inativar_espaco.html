@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inativar Espaço</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Sistema de Reservas</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="reserva.html">Reservar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Login</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2>Inativar Espaço</h2>
+            <button type="button" class="btn btn-primary" onclick="window.location.href='gestao.html'">Gestão de Espaços</button>
+        </div>
+        <form id="inativarForm" onsubmit="return inativarEspaco()">
+            <div class="form-group">
+                <label for="selectEspaco">Selecione o Espaço</label>
+                <select class="form-control" id="selectEspaco" onchange="populateForm(this.value)">
+                    <option value="">Selecione...</option>
+                    <!-- opções serão carregadas dinamicamente -->
+                </select>
+            </div>
+            <div>
+                <input type="hidden" id="espacoId" name="espacoId" value="">
+            </div>
+            <button type="submit" class="btn btn-danger">Inativar Espaço</button>
+        </form>
+    </div>
+    
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('http://localhost:3001/data');
+                if (!response.ok) {
+                    throw new Error('Erro ao consultar dados');
+                }
+                const data = await response.json();
+                const selectEspaco = document.getElementById('selectEspaco');
+                
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;  // Assumindo que cada item possui um campo 'id'
+                    option.textContent = item.nome_do_espaco;
+                    selectEspaco.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Houve um problema com a requisição:', error);
+            }
+        }
+
+        function populateForm(id) {
+            document.getElementById('espacoId').value = id;
+        }
+
+        async function inativarEspaco() {
+            try {
+                const espacoId = document.getElementById('espacoId').value;
+                const response = await fetch(`http://localhost:3001/inativarEspaco/${espacoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ativo: false })
+                });
+                if (!response.ok) {
+                    throw new Error('Erro ao inativar espaço.');
+                }
+                alert('Espaço inativado com sucesso!');
+                return false; // Evita o envio tradicional do formulário
+            } catch (error) {
+                console.error('Erro ao inativar espaço:', error);
+                alert('Erro ao inativar espaço. Verifique o console para mais detalhes.');
+                return false; // Evita o envio tradicional do formulário
+            }
+        }
+
+        window.onload = fetchData;
+    </script>    
+</body>
+</html>

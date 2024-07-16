@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Espaços</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Sistema de Reservas</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" id="gestaoEspacosLink" href="gestao.html">Gestão de Espaços</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="inativarEspacosLink" href="minha_reserva_adm.html">Minhas Reservas</a>
+                </li>
+            </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Deslogar</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2>Gestão de Espaços</h2>
+            <div>
+                <button type="button" class="btn btn-primary" onclick="window.location.href='editar_espaco.html'">Editar Espaço</button>
+                <button type="button" class="btn btn-danger ml-2" onclick="window.location.href='inativar_espaco.html'">Inativar Espaço</button>
+            </div>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tipo de Espaço</th>
+                    <th>Nome do Espaço</th>
+                    <th>Descrição do Espaço</th>
+                    <th>Ativo</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- espaços existentes serão relacionados aqui -->
+            </tbody>
+        </table>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('http://localhost:3001/data');
+                if (!response.ok) {
+                    throw new Error('Erro ao consultar dados');
+                }
+                const data = await response.json();
+                const tableBody = document.getElementById('table-body');
+                tableBody.innerHTML = ''; // Limpa a tabela antes de adicionar novos itens
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+
+                    const tipoCell = document.createElement('td');
+                    tipoCell.textContent = item.tipo_de_espaco;
+                    row.appendChild(tipoCell);
+
+                    const nomeCell = document.createElement('td');
+                    nomeCell.textContent = item.nome_do_espaco;
+                    row.appendChild(nomeCell);
+
+                    const descricaoCell = document.createElement('td');
+                    descricaoCell.textContent = item.descricao_do_espaco;
+                    row.appendChild(descricaoCell);
+
+                    const ativoCell = document.createElement('td');
+                    ativoCell.textContent = item.ativo;
+                    row.appendChild(ativoCell);
+
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Houve um problema com a requisição:', error);
+                const resultDiv = document.getElementById('result');
+                resultDiv.textContent = 'Erro ao consultar dados.';
+            }
+        }
+
+        window.onload = fetchData;
+
+        function inativarEspaco() {
+            const espacoId = document.getElementById('espacoId').value;
+            if (!espacoId) {
+                console.error('ID do espaço não está definido.');
+                return;
+            }
+
+            const requestOptions = {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ativo: false
+                })
+            };
+
+            fetch(`http://localhost:3001/data/${espacoId}`, requestOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao inativar espaço.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Espaço inativado com sucesso:', data);
+                    fetchData(); // Atualiza a tabela após inativar o espaço
+                })
+                .catch(error => {
+                    console.error('Erro ao inativar espaço:', error);
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.textContent = 'Erro ao inativar espaço.';
+                });
+        }
+    </script>
+</body>
+</html>

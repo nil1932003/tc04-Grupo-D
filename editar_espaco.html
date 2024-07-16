@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Espaço</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Sistema de Reservas</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="reserva.html">Reservar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Login</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2>Editar Espaço</h2>
+            <button type="button" class="btn btn-primary" onclick="window.location.href='gestao.html'">Gestão de Espaços</button>
+        </div>
+        <form id="editForm">
+            <div class="form-group">
+                <label for="selectEspaco">Selecione o Espaço</label>
+                <select class="form-control" id="selectEspaco" onchange="populateForm()">
+                    <option value="">Selecione...</option>
+                    <!-- opções serão carregadas dinamicamente -->
+                </select>
+            </div>
+            <input type="hidden" id="espacoId" name="espacoId" value=""> <!-- Campo oculto para o ID do espaço -->
+            <div class="form-group">
+                <label for="tipoEspaco">Tipo de Espaço</label>
+                <input type="text" class="form-control" id="tipoEspaco">
+            </div>
+            <div class="form-group">
+                <label for="nomeEspaco">Nome do Espaço</label>
+                <input type="text" class="form-control" id="nomeEspaco">
+            </div>
+            <div class="form-group">
+                <label for="descricaoEspaco">Descrição do Espaço</label>
+                <textarea class="form-control" id="descricaoEspaco" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="ativoEspaco">Ativo</label>
+                <select class="form-control" id="ativoEspaco">
+                    <option value="true">Sim</option>
+                    <option value="false">Não</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </form>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('http://localhost:3001/data');
+                if (!response.ok) {
+                    throw new Error('Erro ao consultar dados');
+                }
+                const data = await response.json();
+
+                const selectEspaco = document.getElementById('selectEspaco');
+                data.forEach(espaco => {
+                    const option = document.createElement('option');
+                    option.value = espaco.id; // Define o valor como o ID do espaço
+                    option.textContent = espaco.nome_do_espaco;
+                    selectEspaco.appendChild(option);
+                });
+
+                selectEspaco.addEventListener('change', function() {
+                    populateForm();
+                });
+            } catch (error) {
+                console.error('Houve um problema com a requisição:', error);
+            }
+        });
+
+        async function populateForm() {
+            const selectElement = document.getElementById('selectEspaco');
+            const espacoId = selectElement.value; // Obtém o valor do ID do espaço selecionado no select
+            document.getElementById('espacoId').value = espacoId; // Atribui o valor ao campo espacoId
+
+            try {
+                const response = await fetch(`http://localhost:3001/data/${espacoId}`);
+                if (!response.ok) {
+                    throw new Error('Erro ao consultar dados');
+                }
+                const data = await response.json();
+
+                document.getElementById('tipoEspaco').value = data.tipo_de_espaco;
+                document.getElementById('nomeEspaco').value = data.nome_do_espaco;
+                document.getElementById('descricaoEspaco').value = data.descricao_do_espaco;
+                document.getElementById('ativoEspaco').value = data.ativo.toString();
+            } catch (error) {
+                console.error('Houve um problema com a requisição:', error);
+            }
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById('espacoId').value;
+            const tipo_de_espaco = document.getElementById('tipoEspaco').value;
+            const nome_do_espaco = document.getElementById('nomeEspaco').value;
+            const descricao_do_espaco = document.getElementById('descricaoEspaco').value;
+            const ativo = document.getElementById('ativoEspaco').value;
+
+            const data = { id, tipo_de_espaco, nome_do_espaco, descricao_do_espaco, ativo };
+
+            try {
+                const response = await fetch('http://localhost:3001/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    alert('Dados atualizados com sucesso!');
+                } else {
+                    alert('Erro ao atualizar dados: ' + errorText);
+                }
+            } catch (error) {
+                console.error('Houve um problema com a requisição:', error);
+                alert('Erro ao atualizar dados.');
+            }
+        });
+    </script>
+</body>
+</html>
